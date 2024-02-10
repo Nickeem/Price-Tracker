@@ -1,0 +1,5 @@
+Grocery Shopping - Estimate how much money you are going to spend in groceries before leaving home.
+
+Tasks:
+Create Inital dataset
+Create Rules under which they are updated
