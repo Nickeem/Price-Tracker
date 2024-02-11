@@ -59,21 +59,21 @@ class MassyProductModel:
         self.product_collection.delete()
 
 
-model = MassyProductModel()
-model.add_product('Kraft Mac & Cheese Three Cheese 206g',
-                  'Boxed Meals,Boxed/Canned Meals,Kraft Competiton,Pastas, Grains & Rice, Grocery',
-                  'https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg',
-                  'https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg'
-                  )
-records = model.getProducts('Kraft Mac & Cheese Three Cheese 206g')
-print((records[0].collection_id))
-# for record in records:
-#     print(f"Results: {}")
-
-x = {
-    "product_name": "Kraft Mac & Cheese Three Cheese 206g",
-    "price": 5.75,
-    "categories": "Boxed Meals,Boxed/Canned Meals,Kraft Competiton,Pastas, Grains & Rice, Grocery",
-    "img_source": "https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg"
-}
-
+# model = MassyProductModel()
+# model.add_product('Kraft Mac & Cheese Three Cheese 206g',
+#                   'Boxed Meals,Boxed/Canned Meals,Kraft Competiton,Pastas, Grains & Rice, Grocery',
+#                   'https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg',
+#                   'https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg'
+#                   )
+# records = model.getProducts('Kraft Mac & Cheese Three Cheese 206g')
+# print((records[0].collection_id))
+# # for record in records:
+# #     print(f"Results: {}")
+#
+# x = {
+#     "product_name": "Kraft Mac & Cheese Three Cheese 206g",
+#     "price": 5.75,
+#     "categories": "Boxed Meals,Boxed/Canned Meals,Kraft Competiton,Pastas, Grains & Rice, Grocery",
+#     "img_source": "https://www.shopmassystoresbb.com/wp-content/uploads/2021/01/Kraft-Three-Cheese.jpg"
+# }
+#
