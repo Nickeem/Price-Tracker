@@ -151,8 +151,8 @@ class MassyScraper:
         return text.replace('\t', '').replace('\n', '')
 
 
-scraper = MassyScraper()
-# info = scraper.get_product_info("https://www.shopmassystoresbb.com/product/serta-queen-perfect-sleeper-base/")
+# scraper = MassyScraper()
+# info = scraper.get_product_info("https://www.shopmassystoresbb.com/product/whirlpool-electric-stove-30-copy/")
 # print(info)
 # details_container = soup.find('div', class_='shop-detail-right')
 # price_container = details_container.find('p', class_='price')

@@ -18,8 +18,8 @@ class MassyProductModel:
 
     def add_product(self, product_name,  categories, link_to_product, img_source):
         if self.productExists(product_name):
-            print('Item already exists')
-            pass
+            print(f'Item already exists: {product_name}')
+            return False
         else:
             product_data = {
                 'product_name': product_name,
@@ -29,6 +29,7 @@ class MassyProductModel:
                 'source': self.DATA_SOURCE,
             }
             self.product_collection.create(product_data)
+            return True
 
     def productExists(self, product_name):
         return len(self.getProducts(product_name)) > 0
