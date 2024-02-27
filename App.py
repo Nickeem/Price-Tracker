@@ -7,6 +7,7 @@ from Model.MassyPriceModel import MassyPriceModel
 from Model.ImportsModel import ImportsModel
 from Scrapers.MassyScraper import MassyScraper
 from Handlers.Logger import Logger
+from Handlers.Config import Config
 
 
 class App:
@@ -14,6 +15,7 @@ class App:
     barbados_timezone = pytz.timezone(timezone)
 
     LOGS_PATH = './Logs'
+    CONFIG_FILE = 'config.json'
 
     def __init__(self):
         datestamp = str(datetime.datetime.utcnow().date())
@@ -24,11 +26,15 @@ class App:
 
         self.ERROR_LOGGER = Logger(self.LOGS_PATH, error_log_file_name)
         self.IMPORT_LOGGER = Logger(self.LOGS_PATH, import_log_file_name)
+        self.config = Config(self.CONFIG_FILE)
 
     def run(self):
-        product_model = MassyProductModel()
-        price_model = MassyPriceModel()
-        imports_model = ImportsModel()
+        HOST = self.config.get_database_host()
+        PORT = self.config.get_database_port()
+
+        product_model = MassyProductModel(HOST, PORT)
+        price_model = MassyPriceModel(HOST, PORT)
+        imports_model = ImportsModel(HOST, PORT)
         # product_model.remove_all()
         scraper = MassyScraper()
         main_menu_info, submenu_info = scraper.get_sources()
