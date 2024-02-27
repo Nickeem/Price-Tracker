@@ -35,7 +35,7 @@ class App:
 
         # scraping stats
         total_sources = 0
-        total_products = 0
+        # total_products = 0
         new_products_scraped = 0
         price_updated = 0
         price_update_skipped = 0
@@ -96,7 +96,7 @@ class App:
 
         # log import job stats
         imports_model.add_import_info(start_time, end_time, new_products_scraped, failed_scraped,
-                                      products_skipped, price_updated, price_update_skipped, total_products,
+                                      products_skipped, price_updated, price_update_skipped, total_sources,
                                       product_model.DATA_SOURCE)
 
         print(
