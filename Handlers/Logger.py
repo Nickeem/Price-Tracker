@@ -19,10 +19,14 @@ class Logger:
 
         self.full_path_name = log_folder + "/" + self.file_name
         if os.path.exists(self.full_path_name):
-            counter = 1
+            counter = 2
+            self.file_name = self.log_name + '_' + str(counter) + self.FILETYPE
+            self.full_path_name = log_folder + "/" + self.file_name
+
             while os.path.exists(self.full_path_name + '_' + str(counter)):
                 counter += 1
-            self.full_path_name = self.full_path_name + '_' + str(counter)
+            self.file_name = self.log_name + '_' + str(counter) + self.FILETYPE
+            self.full_path_name = log_folder + "/" + self.file_name
         else:
             # create file
             print(self.full_path_name)
