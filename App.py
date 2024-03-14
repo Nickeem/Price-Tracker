@@ -91,8 +91,12 @@ class App:
                         price_update_skipped += 1
 
                 except Exception as err:
+                    if type(err).__name__ == 'ClientResponseError':
+                        message = f'Failed to make database connection.Type of Error: {type(err).__name__}. Error:  {err}'
+                        self.ERROR_LOGGER.log(message)
+                        exit()
                     failed_scraped += 1
-                    message = f'Error parsing product info for {source}. Error: {err}'
+                    message = f'Error parsing product info for {source}. Type of Error: {type(err).__name__}. Error:  {err}'
                     self.ERROR_LOGGER.log(message)
                     # print(f'Error parsing product info {source}')
                 finally:
