@@ -51,13 +51,13 @@ class App:
         start_time = str(datetime.datetime.utcnow())
 
         for menu_item in submenu_info:
-            if total_sources >= 50:
+            if total_sources >= self.config.get_dev_import_limit() and self.config.isDev():
                 break
             product_link = menu_item['link']
             product_sources = scraper.get_product_sources(product_link)
             for source in product_sources:
                 # dev clause
-                if total_sources >= 50:
+                if total_sources >= self.config.get_dev_import_limit() and self.config.isDev():
                     break
 
                 try:
@@ -94,7 +94,7 @@ class App:
                     if type(err).__name__ == 'ClientResponseError':
                         message = f'Failed to make database connection.Type of Error: {type(err).__name__}. Error:  {err}'
                         self.ERROR_LOGGER.log(message)
-                        exit()
+                        exit(2)  # exit code of 2 means ClientResponseError
                     failed_scraped += 1
                     message = f'Error parsing product info for {source}. Type of Error: {type(err).__name__}. Error:  {err}'
                     self.ERROR_LOGGER.log(message)

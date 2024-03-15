@@ -23,8 +23,14 @@ class Config:
             return False
         return True
 
-    def get_database_host(self):
+    def get_database_host(self) -> str:
         return self.CONFIG['database_host']
 
-    def get_database_port(self):
+    def get_database_port(self) -> int:
         return self.CONFIG['database_port']
+
+    def isDev(self) -> bool:
+        return self.CONFIG['dev_enabled']
+
+    def get_dev_import_limit(self) -> int:
+        return self.CONFIG['dev_import_limit']
