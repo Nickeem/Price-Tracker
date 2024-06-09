@@ -1,13 +1,20 @@
+import json
+import math
+import time
+
 import bs4
 import requests
 from bs4 import BeautifulSoup
 
 from playwright.sync_api import sync_playwright
+from PriceMartProductInfo import PriceMartProductInfo
 
-
+# class does full scra;e in ~619 seconds
 class PriceMartScraper:
     BASEURL = 'https://www.pricesmart.com'
     HOMEURL = 'https://www.pricesmart.com/en-BB'
+    PRODUCTS_API_URL = 'https://www.pricesmart.com/api/br_discovery/getProductsByKeyword'
+    PRODUCT_API_URL = 'https://www.pricesmart.com/api/ct/getProduct'
     CATEGORYURL = 'https://www.pricesmart.com/en-BB/categories'
     USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,' \
                  + ' like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
@@ -23,7 +30,7 @@ class PriceMartScraper:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
-                page.goto(source)
+                page.goto(source, referer=self.BASEURL)
 
                 if wait_on_element is not None:
                     # Wait for the dynamic content to load
@@ -73,31 +80,85 @@ class PriceMartScraper:
 
     def get_product_sources(self, category_source):
         product_sources = []
+        page_number = 1  # page to render
+        num_per_page = 12
+        start = 0  # 0 or multiple of 12
+        category_id = category_source.split('/')[-1]
 
+        headers = {
+            "User-Agent": self.USER_AGENT,
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept-Encoding": "gzip, deflate, br"
+        }
+        current_url = str(category_source)  # + f"?page={page_number}"
+        ref_url = self.HOMEURL
+        payload = {
+          "url": current_url,
+          "start": start,
+          "q": category_id,
+          "fq": [],
+          "search_type": "category",
+          "rows": 12,
+          "ref_url": ref_url,
+          "account_id": "7024",
+          "auth_key": "ev7libhybjg5h1d1",
+          # "request_id": 1717260546250,
+          "domain_key": "pricesmart_bloomreach_io_en",
+          "fl": "pid,title,price,thumb_image,brand,slug,skuid,currency,fractionDigits,master_sku,availability_BB,price_BB,inventory_BB,inventory_BB,promoid_BB",
+          "view_id": "BB"
+        }
+
+        response = requests.post(self.PRODUCTS_API_URL, data=json.dumps(payload), headers=headers)
+        response = response.json()
+        response = response['response']
+
+        products = response['docs']
+        num_in_category = response['numFound']
+        max_page = math.ceil( num_in_category / num_per_page )
+        for page in range(2,max_page+1):
+            current_url = str(category_source) + f"?page={page_number}"
+            ref_url = str(category_source) + f"?page={page_number-1}"
+            start = num_per_page * page
+            payload['start'] = start
+            payload['url'] = current_url
+            payload['ref_url'] = ref_url
+
+            response = requests.post(self.PRODUCTS_API_URL, data=json.dumps(payload), headers=headers)
+            response = response.json()
+            response = response['response']
+
+            products += response['docs']
+        for index in range(len(products)):
+            products[index] = PriceMartProductInfo(products[index])
+        return products
+
+        """
         # wait on custom navigation element to load to start scraping
-        wait_on_element = '.custom-pagination'
+        wait_on_element = '.results-listing .sf-button--pure'
+        
+        category_source_page = str(category_source)
 
-        soup = self.get_html_soup(category_source,extensive=True, wait_on_element=wait_on_element)
+        soup = self.get_html_soup(category_source_page, extensive=True, wait_on_element=wait_on_element)
         page_info = soup
         next_page = True
 
         while next_page:
-            products_container = page_info.find('div', '.results-listing')
+            products_container = page_info.find('div', class_='results-listing')
             products = products_container.find_all('div', class_='sf-button--pure')
             for product in products:
                 product_sources.append(self.BASEURL + product['href'])
-                if len(page_info.find_all('li', id='next')) > 0:
-                    print(1)
-                    next_page_source_element = page_info.find('li', id='next')
-                    next_page_source = next_page_source_element.find('a', class_='page-link')['href']
-                    next_page_source = self.BASEURL + next_page_source
-                    print(next_page_source)
-                    page_info = self.get_html_soup(next_page_source)
-                else:
-                    print(2)
-                    next_page = False
 
-        return product_sources
+            # load next page and check if it is a valid page
+            page_number += 1
+            category_source_page = category_source + '?page=' + str(page_number)
+            try:
+                soup = self.get_html_soup(category_source_page, extensive=True, wait_on_element=wait_on_element)
+            except Exception as e:
+                print(f'When trying to navigate to {category_source_page}, an error occurred. Error: {e}')
+                break
+
+            page_info = soup
+            """
 
     def get_product_info(self, product_source):
         image_source = ''
@@ -135,17 +196,79 @@ class PriceMartScraper:
             'brand': brand,
             'description': description,
         }
+    def get_additonal_product_info_simplified(self, sku):
+        # api_url = self.PRODUCT_API_URL  #+ product_uri
+        payload = [
+            {
+                "skus": [sku]
+            },
+            {
+                "products": "getProductBySKU"
+            }
+        ]
+        headers = {
+            "User-Agent": self.USER_AGENT,
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept-Encoding": "gzip, deflate, br"
+        }
+
+        response = requests.post(self.PRODUCT_API_URL, data=json.dumps(payload), headers=headers)
+        response = response.json()
+        # response = response['response']
+
+        element_name = response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1]['name']
+        description = response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1]['value']['en-CR']
+        return description
+
+    def get_product_additional_info(self, product_info: PriceMartProductInfo):
+        api_url = self.PRODUCT_API_URL + product_info.product_uri
+        description = self.get_additonal_product_info_simplified(product_info.sku)
+        product_info.description = description
+        return product_info
 
 
+start_time = time.time()
 scraper = PriceMartScraper()
 # soup = scraper.get_html_soup(scraper.HOMEURL)
 # print(soup)
+#
+# # print(category_sources)
+# category_product_info = {}
+# for category_source in category_sources:
+#     response = scraper.get_product_sources(category_source['link'])
+#     info = response['response']
+#     name = category_source['name']
+#     # print(f"{name}: {response}")
+#     # product_info = PriceMartProductInfo(info)
+#     category_product_info[name] = info
+#
+# print(category_product_info)
 category_sources = scraper.get_category_sources()
-# print(category_sources)
+for category in category_sources:
+    category_link = category['link']
+    products = scraper.get_product_sources(category_link)
+    for product in products:
+        product_modified = scraper.get_product_additional_info(product)
 
-# product_source = 'https://www.pricesmart.com/en-BB/product/Pampers-Cruisers-Diapers-Size-5-104-Units-344776/344776'
+# products = scraper.get_product_sources("https://www.pricesmart.com/en-BB/category/Groceries/G10D03")
+# while True:
+#     index = int(input('Enter index number: '))
+#     product_description = scraper.get_product_additional_info(products[index])
+# print(product_description)
+# print(products)
+# products[0].print_product()
+
+
+
+
+# product_source = 'https://www.pricesmart.com/en-BB/product/Kale-450-g-15-8-oz-447156/447156'
 # print(scraper.get_product_info(product_source))
 
+# category_source = 'https://www.pricesmart.com/en-BB/category/Liquor-Beer-Wine/G10D08014'
+# product_sources = scraper.get_product_sources(category_source)
+# print(product_sources)
 # for category_source in category_sources:
 #     print(scraper.get_product_sources(category_source['link']))
 # print(category_sources)
+
+print("--- %s seconds ---" % (time.time() - start_time))
