@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 from PriceMartProductInfo import PriceMartProductInfo
 
-# class does full scra;e in ~619 seconds
+
+# class does full scrape in ~619 seconds
 class PriceMartScraper:
     BASEURL = 'https://www.pricesmart.com'
     HOMEURL = 'https://www.pricesmart.com/en-BB'
@@ -21,12 +22,15 @@ class PriceMartScraper:
 
     DRIVER_PATH = "/Users/vacat/Documents/chromedriver-win64/"
 
+    def __init__(self):
+        pass
+
     def __clean_text(self, text):
         return text.replace('\n', '').strip()
 
     def get_html_soup(self, source, extensive=False, wait_on_element=None):
         # soup = BeautifulSoup()
-        if extensive: # load js
+        if extensive:  # load js
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
@@ -52,7 +56,7 @@ class PriceMartScraper:
         return soup
 
     def get_category_info(self, tag: bs4.Tag):
-        link = self.BASEURL + tag['href']  # concat site pah with relative path
+        link = self.BASEURL + tag['href']  # concat site path with relative path
         # div_tag = tag.find('span', recursive=False, class_='sf-menu-item__label')
         # get and clean name text
         name = self.__clean_text(tag.text)
@@ -61,7 +65,13 @@ class PriceMartScraper:
             'link': link
         }
 
-    def get_category_sources(self) -> []:
+    def process_categories_from_text(self, category_name: str) -> []:
+        # extract each category from text
+        categories = tuple(category_name.split(',')) + tuple(category_name.split('and')) + tuple(category_name.split('&'))
+        categories = [category.strip() for category in categories]
+        return categories
+
+    def get_category_sources(self) -> list:
         menu_items_div_class = "categories-container"
 
         soup = self.get_html_soup(self.CATEGORYURL)
@@ -93,19 +103,19 @@ class PriceMartScraper:
         current_url = str(category_source)  # + f"?page={page_number}"
         ref_url = self.HOMEURL
         payload = {
-          "url": current_url,
-          "start": start,
-          "q": category_id,
-          "fq": [],
-          "search_type": "category",
-          "rows": 12,
-          "ref_url": ref_url,
-          "account_id": "7024",
-          "auth_key": "ev7libhybjg5h1d1",
-          # "request_id": 1717260546250,
-          "domain_key": "pricesmart_bloomreach_io_en",
-          "fl": "pid,title,price,thumb_image,brand,slug,skuid,currency,fractionDigits,master_sku,availability_BB,price_BB,inventory_BB,inventory_BB,promoid_BB",
-          "view_id": "BB"
+            "url": current_url,
+            "start": start,
+            "q": category_id,
+            "fq": [],
+            "search_type": "category",
+            "rows": 12,
+            "ref_url": ref_url,
+            "account_id": "7024",
+            "auth_key": "ev7libhybjg5h1d1",
+            # "request_id": 1717260546250,
+            "domain_key": "pricesmart_bloomreach_io_en",
+            "fl": "pid,title,price,thumb_image,brand,slug,skuid,currency,fractionDigits,master_sku,availability_BB,price_BB,inventory_BB,inventory_BB,promoid_BB",
+            "view_id": "BB"
         }
 
         response = requests.post(self.PRODUCTS_API_URL, data=json.dumps(payload), headers=headers)
@@ -114,10 +124,10 @@ class PriceMartScraper:
 
         products = response['docs']
         num_in_category = response['numFound']
-        max_page = math.ceil( num_in_category / num_per_page )
-        for page in range(2,max_page+1):
+        max_page = math.ceil(num_in_category / num_per_page)
+        for page in range(2, max_page + 1):
             current_url = str(category_source) + f"?page={page_number}"
-            ref_url = str(category_source) + f"?page={page_number-1}"
+            ref_url = str(category_source) + f"?page={page_number - 1}"
             start = num_per_page * page
             payload['start'] = start
             payload['url'] = current_url
@@ -192,10 +202,11 @@ class PriceMartScraper:
         return {
             'img_source': image_source,
             'price': price,
-            'product': product,
+            'product_name': product,
             'brand': brand,
             'description': description,
         }
+
     def get_additonal_product_info_simplified(self, sku):
         # api_url = self.PRODUCT_API_URL  #+ product_uri
         payload = [
@@ -216,11 +227,14 @@ class PriceMartScraper:
         response = response.json()
         # response = response['response']
 
-        element_name = response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1]['name']
-        description = response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1]['value']['en-CR']
+        element_name = \
+        response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1]['name']
+        description = \
+        response['data']['products']['results'][0]['masterData']['current']['masterVariant']['attributesRaw'][1][
+            'value']['en-CR']
         return description
 
-    def get_product_additional_info(self, product_info: PriceMartProductInfo):
+    def get_product_additional_info(self, product_info: PriceMartProductInfo) -> PriceMartProductInfo:
         api_url = self.PRODUCT_API_URL + product_info.product_uri
         description = self.get_additonal_product_info_simplified(product_info.sku)
         product_info.description = description
@@ -257,8 +271,6 @@ for category in category_sources:
 # print(product_description)
 # print(products)
 # products[0].print_product()
-
-
 
 
 # product_source = 'https://www.pricesmart.com/en-BB/product/Kale-450-g-15-8-oz-447156/447156'

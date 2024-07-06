@@ -18,6 +18,10 @@ class MassyScraper:
                  + ' like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
 
 
+    def __init__(self):
+        pass
+
+
     def get_html_soup(self, source):
         headers = {'User-Agent': self.USER_AGENT}
         response = requests.get(source, headers=headers)
@@ -132,13 +136,15 @@ class MassyScraper:
         for info in info_tag:
             categories.append(info.text)
 
+        sku = soup.find('span', class_='sku').text
         return {
             'img_source': img_source,
             'product_name': self.clean_item_info(product),
             'price': price,
             'categories': ','.join(categories),
             'discount': discount,
-            'discounted_price': discounted_price
+            'discounted_price': discounted_price,
+            'sku': sku
         }
 
     def add_categories(self, info, additional_categories: tuple):

@@ -11,9 +11,24 @@ class PriceMartProductInfo:
         self.title = info.get('title', '')
         self.brand = info.get('brand', '')
         self.image = info.get('thumb_image', '')
-        self.description = info.get('description', '')
+        self.description: str = info.get('description', '')
+        self.categories: list = []
+
+    def add_categories(self, categories: list):
+        self.categories = categories
 
     def print_product(self,):
         print(f'{self.title}, {self.price_bb}')
+
+
+    def get_info(self) -> dict:
+        return {
+            'price_bb': self.price_bb,
+            'product_name': self.title,
+            'categories': ', '.join(self.categories),
+            'link_to_product': self.product_uri,
+            'img_source': self.image,
+            'description': self.description
+        }
 
 
