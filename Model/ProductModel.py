@@ -1,8 +1,8 @@
 from pocketbase import PocketBase
-from abc import ABC, abstractmethod
+# from abc import ABC, abstractmethod
 
 
-class ProductModel(ABC):
+class ProductModel:
     HOST = '127.0.0.1'
     PORT = 8090
     COLLECTION_NAME = 'products'
@@ -35,6 +35,7 @@ class ProductModel(ABC):
                 'image_source': img_source,
                 'source': self.DATA_SOURCE,
             }
+            # print(product_data)
             self.product_collection.create(product_data)
             return True
 

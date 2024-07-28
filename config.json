@@ -1,6 +1,6 @@
 {
-  "database_host": "172.233.162.9",
-  "database_port":8080,
+  "database_host": "127.0.0.1",
+  "database_port":8090,
   "dev_enabled": false,
   "dev_import_limit": 50
 }

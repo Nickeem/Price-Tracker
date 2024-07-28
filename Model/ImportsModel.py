@@ -31,6 +31,6 @@ class ImportsModel:
         self.price_collection.create(product_data)
 
 
-# model = ImportsModel()
-#
-# model.add_import_info('2024-02-07 01:39:56.713604', '2024-02-25 01:39:56.713604', 500, 25, 525, 'MASSYSTORES')
+model = ImportsModel()
+
+model.add_import_info('2024-07-07 01:39:56.713604', '2024-07-24 01:39:56.713604', 500, 25, 525, 100,89,789, 'MASSYSTORES')

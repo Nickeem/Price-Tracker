@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from playwright.sync_api import sync_playwright
-from PriceMartProductInfo import PriceMartProductInfo
+from .PriceMartProductInfo import PriceMartProductInfo
 
 
 # class does full scrape in ~619 seconds
@@ -257,30 +257,30 @@ scraper = PriceMartScraper()
 #     category_product_info[name] = info
 #
 # print(category_product_info)
-category_sources = scraper.get_category_sources()
-for category in category_sources:
-    category_link = category['link']
-    products = scraper.get_product_sources(category_link)
-    for product in products:
-        product_modified = scraper.get_product_additional_info(product)
-
-# products = scraper.get_product_sources("https://www.pricesmart.com/en-BB/category/Groceries/G10D03")
-# while True:
-#     index = int(input('Enter index number: '))
-#     product_description = scraper.get_product_additional_info(products[index])
-# print(product_description)
-# print(products)
-# products[0].print_product()
-
-
-# product_source = 'https://www.pricesmart.com/en-BB/product/Kale-450-g-15-8-oz-447156/447156'
-# print(scraper.get_product_info(product_source))
-
-# category_source = 'https://www.pricesmart.com/en-BB/category/Liquor-Beer-Wine/G10D08014'
-# product_sources = scraper.get_product_sources(category_source)
-# print(product_sources)
-# for category_source in category_sources:
-#     print(scraper.get_product_sources(category_source['link']))
-# print(category_sources)
-
-print("--- %s seconds ---" % (time.time() - start_time))
+# category_sources = scraper.get_category_sources()
+# for category in category_sources:
+#     category_link = category['link']
+#     products = scraper.get_product_sources(category_link)
+#     for product in products:
+#         product_modified = scraper.get_product_additional_info(product)
+#
+# # products = scraper.get_product_sources("https://www.pricesmart.com/en-BB/category/Groceries/G10D03")
+# # while True:
+# #     index = int(input('Enter index number: '))
+# #     product_description = scraper.get_product_additional_info(products[index])
+# # print(product_description)
+# # print(products)
+# # products[0].print_product()
+#
+#
+# # product_source = 'https://www.pricesmart.com/en-BB/product/Kale-450-g-15-8-oz-447156/447156'
+# # print(scraper.get_product_info(product_source))
+#
+# # category_source = 'https://www.pricesmart.com/en-BB/category/Liquor-Beer-Wine/G10D08014'
+# # product_sources = scraper.get_product_sources(category_source)
+# # print(product_sources)
+# # for category_source in category_sources:
+# #     print(scraper.get_product_sources(category_source['link']))
+# # print(category_sources)
+#
+# print("--- %s seconds ---" % (time.time() - start_time))

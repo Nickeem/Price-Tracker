@@ -13,6 +13,7 @@ from Scrapers.MassyScraper import MassyScraper
 from Scrapers.PriceMartProductInfo import PriceMartProductInfo
 from Handlers.Logger import Logger
 from Handlers.Config import Config
+import traceback
 
 
 class App:
@@ -149,6 +150,7 @@ class App:
             f'Scrape %:{((total_sources - failed_scraped) / total_sources) * 100}% ')
 
     def run_price_mart(self):
+        print('start')
         HOST = self.config.get_database_host()
         PORT = self.config.get_database_port()
 
@@ -171,14 +173,17 @@ class App:
 
         # get category sources
         category_sources = scraper.get_category_sources()
-
+        print('category sources were returned')
         # get products in each category
         for category in category_sources:
             category_link = category['link']
+            print('Getting products from link')
             products = scraper.get_product_sources(category_link)
             categories = scraper.process_categories_from_text(category['name'])
             for product in products:
-
+                print('Importing products...')
+                if total_sources >= self.config.get_dev_import_limit() and self.config.isDev():
+                    break
                 try:
 
                     product_modified: PriceMartProductInfo = scraper.get_product_additional_info(product)
@@ -191,8 +196,10 @@ class App:
 
                     # info = product_modified.get_info()
                     # add product to database
-                    product_was_added = product_model.add_product(product_modified.title, product_modified.categories,
-                                                                  product_modified.product_uri, product_modified.image)
+                    product_was_added = product_model.add_product(product_modified.title,
+                                                                  product_modified.getCategories_str(),
+                                                                  product_modified.getProudctLink(),
+                                                                  product_modified.image)
 
                     # check if status of product importation and log
                     if product_was_added:
@@ -216,13 +223,14 @@ class App:
                         price_update_skipped += 1
 
                 except Exception as err:
+                    print(traceback.format_exc())
                     if type(err).__name__ == 'ClientResponseError':
                         message = f'Failed to make database connection.Type of Error: {type(err).__name__}. Error:  {err}'
-                        self.MASSY_ERROR_LOGGER.log(message)
+                        self.PM_ERROR_LOGGER.log(message)
                         exit(2)  # exit code of 2 means ClientResponseError
                     failed_scraped += 1
                     message = f'Error parsing product info for {product.product_uri}. Type of Error: {type(err).__name__}. Error:  {err}'
-                    self.MASSY_ERROR_LOGGER.log(message)
+                    self.PM_ERROR_LOGGER.log(message)
                 finally:
                     total_sources += 1
 
@@ -240,7 +248,8 @@ class App:
             f'Scrape %:{((total_sources - failed_scraped) / total_sources) * 100}% ')
 
     def run(self):
-        self.run_massy()
+        # self.run_massy()
+        print('Start execution')
         self.run_price_mart()
     def print_sources(self):
         scraper = MassyScraper()

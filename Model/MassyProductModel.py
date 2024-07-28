@@ -1,4 +1,4 @@
-from ProductModel import ProductModel
+from .ProductModel import ProductModel
 
 
 class MassyProductModel(ProductModel):

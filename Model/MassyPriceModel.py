@@ -1,6 +1,7 @@
 from pocketbase import PocketBase
 from datetime import datetime, timedelta
 
+
 class MassyPriceModel:
     HOST = '127.0.0.1'
     PORT = 8090
